@@ -1,0 +1,37 @@
+ws2012:
+  iis8:
+    settings:
+      UriEnableCache: 
+        value: 1
+      UriScavengerPeriod: 
+        value: 240
+      WebConfig:
+        value:
+          - path: 'MACHINE/WEBROOT/APPHOST' # system wide
+            values:
+              WebConfigCacheEnabled: 
+                value: 1
+              WebConfigEnableKernelCache: 
+                value: 1
+          - path: 'MACHINE/WEBROOT/APPHOST/TestSite' # site specific
+            values:
+              WebConfigCacheEnabled: 
+                value: 0
+              WebConfigEnableKernelCache:
+                value: 0
+    encoder:
+      name: dotnet
+      settings:
+        UriEnableCache:
+          default: 1
+          unit: ''
+        UriScavengerPeriod:
+          default: 120
+          unit: 'seconds'
+        WebConfig: # No encoder settings for this yet
+        WebConfigCacheEnabled:
+          default: 1
+          unit: ''
+        WebConfigEnableKernelCache:
+          default: 1
+          unit: ''
