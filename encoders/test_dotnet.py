@@ -21,13 +21,9 @@ def load_config():
 
 def validate_config(config):
     try:
-        enc_config = config['ws2012']['iis8']['encoder']
+        enc_config = config['ec2win']['web']['encoder']
     except KeyError:
         raise EncoderConfigException("Unable to locate encoder config subsection in config file {}".format(config_path))
-    try:
-        set_config = config['ws2012']['iis8']['settings']
-    except KeyError:
-        raise EncoderConfigException("Unable to locate settings config subsection in config file {}".format(config_path))
 
 
     if not isinstance(enc_config, dict):
@@ -35,7 +31,7 @@ def validate_config(config):
     if not enc_config.get('name'):
         raise EncoderConfigException('No encoder name specified')
     
-    return enc_config, set_config
+    return enc_config
 
 def load_encoder(encoder):
     if isinstance(encoder, str):
@@ -60,31 +56,14 @@ def write_test_output_file(fname, data):
 
     f.close()
 
-describe_data = """\
+describe_data_json = """\
 {
     "WebConfig":  {
                       "MACHINE/WEBROOT/APPHOST":          {
                                                                "system.webServer/caching":  {
                                                                                                 "value":  "Microsoft.IIs.PowerShell.Framework.ConfigurationSection",
-                                                                                                "enabled":  true,
-                                                                                                "enableKernelCache":  true,
-                                                                                                "maxCacheSize":  0,
-                                                                                                "maxResponseSize":  262144,
-                                                                                                "profiles":  {
-                                                                                                                 "value":  "Microsoft.IIs.PowerShell.Framework.ConfigurationElement",
-                                                                                                                 "Collection":  ""
-                                                                                                             },
-                                                                                                "PSPath":  "MACHINE/WEBROOT/APPHOST/TestSite",
-                                                                                                "Location":  "",
-                                                                                                "ConfigurationPathType":  10,
-                                                                                                "ItemXPath":  "/system.webServer/caching"
-                                                                                            }
-                                                           },
-                      "MACHINE/WEBROOT/APPHOST/TestSite":  {
-                                                               "system.webServer/caching":  {
-                                                                                                "value":  "Microsoft.IIs.PowerShell.Framework.ConfigurationSection",
                                                                                                 "enabled":  false,
-                                                                                                "enableKernelCache":  false,
+                                                                                                "enableKernelCache":  true,
                                                                                                 "maxCacheSize":  0,
                                                                                                 "maxResponseSize":  262144,
                                                                                                 "profiles":  {
@@ -127,22 +106,44 @@ describe_data = """\
                                                                      }
 }"""
 
+describe_data_ps1 = r"""\
+Import-Module WebAdministration
+Set-WebConfigurationProperty -Filter "system.webServer/caching" -PSPath "False" -Name "enabled" -Value MACHINE/WEBROOT/APPHOST
+Set-WebConfigurationProperty -Filter "system.webServer/caching" -PSPath "True" -Name "enableKernelCache" -Value MACHINE/WEBROOT/APPHOST
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\Http\Parameters" -Name "UriEnableCache" -Value 1
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\Http\Parameters" -Name "UriScavengerPeriod" -Value 240
+"""
+
+encode_data = {
+    "application": {
+        "components": {
+            "web": {
+                "settings": {
+                    "UriEnableCache": {"value": 1},
+                    "UriScavengerPeriod": {"value": 240},
+                    "WebConfigCacheEnabled": {"value": 0},
+                    "WebConfigEnableKernelCache": {"value": 1},
+                }
+            }
+        }
+    }
+}
 
 def test_describe():
-    enc_config, set_config = load_config()
+    enc_config = load_config()
     encoder_klass = load_encoder(enc_config['name'])
     encoder = encoder_klass(enc_config)
-    settings = encoder.describe(set_config)
+    settings = encoder.describe()
     write_test_output_file('test_describe', settings)
     # TODO: implement test
     assert True
 
 def test_encode_multi():
-    enc_config, set_config = load_config()
+    enc_config = load_config()
     encoder_klass = load_encoder(enc_config['name'])
     encoder = encoder_klass(enc_config)
-    settings = encoder.describe(set_config)
-    encodable = {name: set_config.get(name, {}).get('value') for name in settings.keys()}
+    settings = encoder.describe()
+    encodable = {name: encode_data['application']['components']['web']['settings'].get(name, {}).get('value') for name in settings.keys()}
     config_expected_type = enc_config.get('expected_type')
     encoded = encoder.encode_multi(encodable, expected_type=config_expected_type)
     write_test_output_file('test_encode_multi', encoded)
@@ -150,21 +151,47 @@ def test_encode_multi():
     assert True
 
 
-def test_decode_multi():
-    enc_config, _ = load_config()
+def test_decode_multi_json():
+    enc_config = load_config()
     encoder_klass = load_encoder(enc_config['name'])
     encoder = encoder_klass(enc_config)
-    decoded = encoder.decode_multi(describe_data)
-    write_test_output_file('test_decode_multi', decoded)
+    decoded = encoder.decode_multi(describe_data_json)
+    write_test_output_file('test_decode_multi_json', decoded)
     # TODO: implement test
     assert True
 
-
-def test_encode_describe():
-    enc_config, set_config = load_config()
+def test_decode_multi_ps1():
+    enc_config = load_config()
     encoder_klass = load_encoder(enc_config['name'])
     encoder = encoder_klass(enc_config)
-    describe = encoder.encode_describe(set_config)
+    decoded = encoder.decode_multi(describe_data_ps1)
+    write_test_output_file('test_decode_multi_ps1', decoded)
+    # TODO: implement test
+    assert True
+
+def test_encode_describe():
+    enc_config = load_config()
+    encoder_klass = load_encoder(enc_config['name'])
+    encoder = encoder_klass(enc_config)
+    describe = encoder.encode_describe()
     write_test_output_file('test_encode_describe', describe)
     # TODO: implement test
+    assert True
+
+def test_static_describe_json():
+    enc_config = load_config()
+    described = enc.describe(enc_config, describe_data_json)
+    write_test_output_file('test_static_describe_json', described)
+    assert True
+
+def test_static_describe_ps1():
+    enc_config = load_config()
+    described = enc.describe(enc_config, describe_data_ps1)
+    write_test_output_file('test_static_describe_ps1', described)
+    assert True
+
+def test_static_encode():
+    enc_config = load_config()
+    encoded = enc.encode(enc_config, encode_data['application']['components']['web']['settings'])
+    write_test_output_file('test_static_encode', encoded[0])
     assert True

@@ -1,37 +1,17 @@
-ws2012:
-  iis8:
-    settings:
-      UriEnableCache: 
-        value: 1
-      UriScavengerPeriod: 
-        value: 240
-      WebConfig:
-        value:
-          - path: 'MACHINE/WEBROOT/APPHOST' # system wide
-            values:
-              WebConfigCacheEnabled: 
-                value: 1
-              WebConfigEnableKernelCache: 
-                value: 1
-          - path: 'MACHINE/WEBROOT/APPHOST/TestSite' # site specific
-            values:
-              WebConfigCacheEnabled: 
-                value: 0
-              WebConfigEnableKernelCache:
-                value: 0
+ec2win:            # this matches the driver name, e.g., dotnet, iis, etc. (what should it be)
+  web:             # this is the name of the VM's role: web, app, etc.; we may have multiple although we need only one now
+    s3_bucket: xxx
+    s3_path: yyy
     encoder:
       name: dotnet
       settings:
-        UriEnableCache:
+        UriEnableCache: 
           default: 1
-          unit: ''
-        UriScavengerPeriod:
-          default: 120
-          unit: 'seconds'
-        WebConfig: # No encoder settings for this yet
+        UriScavengerPeriod: 
+          default: 240
+          min: 200
+          max: 300
         WebConfigCacheEnabled:
-          default: 1
-          unit: ''
+          default: 0
         WebConfigEnableKernelCache:
           default: 1
-          unit: ''
