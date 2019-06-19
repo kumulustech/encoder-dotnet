@@ -99,9 +99,6 @@ class RegistryRangeSetting(DotnetRangeSetting):
         if self.path is None:
             raise NotImplementedError('You must provide path for registry setting {} '
                                       'handled by class {}'.format(q(self.name), self.__class__.__name__))
-        if self.default is None:
-            raise NotImplementedError('You must provide the (system\'s) default value for registry settings. Missing in setting {} '
-                                      'handled by class {}'.format(q(self.name), self.__class__.__name__))
 
     def encode_describe(self):
         return '"{path}" = Get-ItemProperty -Path "{path}"'.format(path=self.path)
@@ -122,7 +119,7 @@ class RegistryRangeSetting(DotnetRangeSetting):
 
         # NOTE: Until registry options are set, getting the registry path will return no keys but each of the settings does have a system default value
         #    which will be considered to be in effect in cases where the path in data has no keys
-        value = reg.get(self.name, self.default)
+        value = reg.get(self.name, self.system_default)
         try:
             return self.get_value_encoder().decode(value)
         except ValueError as e:
