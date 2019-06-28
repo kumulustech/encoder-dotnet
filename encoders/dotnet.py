@@ -46,9 +46,6 @@ class DotnetRangeSetting(BaseRangeSetting):
     
     def describe(self):
         retVal = super().describe()
-        retVal[1]['system_default'] = self.system_default
-        if self.default:
-            retVal[1]['default'] = self.default
         retVal[1].pop('unit')
         if self.unit and self.unit != '':
             retVal[1]['unit'] = self.unit

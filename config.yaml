@@ -1,7 +1,7 @@
 ec2win:            # this matches the driver name, e.g., dotnet, iis, etc. (what should it be)
   web:             # this is the name of the VM's role: web, app, etc.; we may have multiple although we need only one now
-    s3_bucket: xxx
-    s3_path: yyy
+    driver_config_setting1: xxx
+    driver_config_setting2: yyy
     encoder:
       name: dotnet
       settings:
