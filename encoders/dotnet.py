@@ -26,6 +26,8 @@ class IntToBoolValueEncoder:
 
     @staticmethod
     def decode(data):
+        if isinstance(data, str):
+            return int(data == 'True')
         return int(data)
 
 
