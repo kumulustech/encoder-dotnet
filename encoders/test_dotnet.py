@@ -123,6 +123,7 @@ encode_data = {
                     "UriScavengerPeriod": {"value": 240},
                     "WebConfigCacheEnabled": {"value": 0},
                     "WebConfigEnableKernelCache": {"value": 1},
+                    "inst_type": {"value": "t2.micro"},
                 }
             }
         }
