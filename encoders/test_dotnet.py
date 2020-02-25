@@ -13,7 +13,7 @@ config_path = os.environ.get('OPTUNE_CONFIG', './config.yaml')
 
 def load_config():
     try:
-        config = yaml.load(open(config_path))
+        config = yaml.safe_load(open(config_path))
     except yaml.YAMLError as e:
         raise EncoderConfigException('Could not parse config file located at "{}". '
                         'Please check its contents. Error: {}'.format(config_path, str(e)))
